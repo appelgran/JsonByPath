@@ -32,7 +32,7 @@ Example JSON:
     // "Jane"
     
     var lastName = order.GetString("billing_address.family_name", "unknown");
-    // "unknown"
+    // "unknown" (fallback)
     
     var totalAmountIncTax = order.GetInt("order_amount", 0);
     // 5000
