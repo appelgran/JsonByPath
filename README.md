@@ -23,7 +23,7 @@ Example JSON:
     
 ### Example 1 - Dig deep
 
-    var firstProductSecondAttribute = order.GetArray("order_lines[0].available_attributes[1]");
+    var firstProductSecondAttribute = order.GetString("order_lines[0].available_attributes[1]", "");
     // "extras"
 
 ### Example 2 - Simply getting a value
@@ -39,5 +39,6 @@ Example JSON:
 
 ### Example 3 - Iterating array
 
-    var orderItemNames = order.GetArray("order_lines").Select(x => JsonByPath.Use(x).GetString("name", ""));
+    var orderItemNames = order.GetArray("order_lines")
+        .Select(x => JsonByPath.Use(x).GetString("name", ""));
     // IEnumerable<string> { "Magz" }
