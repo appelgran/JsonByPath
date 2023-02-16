@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -189,12 +189,6 @@ namespace Appelgran.Helpers
                 throw new ArgumentException("Invalid jsonpath syntax!");
             }
 
-            // data.TryGetProperty further on throws on null
-            if (data.ValueKind == JsonValueKind.Null)
-            {
-                return fallback;
-            }
-
             foreach (var path in paths)
             {
                 var objName = path;
@@ -212,7 +206,8 @@ namespace Appelgran.Helpers
                     }
                 }
 
-                if (data.TryGetProperty(objName, out JsonElement obj))
+                // data.TryGetProperty throws on null
+                if (data.ValueKind != JsonValueKind.Null && data.TryGetProperty(objName, out JsonElement obj))
                 {
                     if (indexes != null)
                     {
@@ -244,15 +239,8 @@ namespace Appelgran.Helpers
                     }
                     else
                     {
-                        // cast to dictionary for another round downwards
-                        try
-                        {
-                            data = obj;
-                        }
-                        catch
-                        {
-                            break;
-                        }
+                        // for another round downwards
+                        data = obj;
                     }
                 }
                 else
