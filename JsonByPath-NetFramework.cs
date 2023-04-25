@@ -28,7 +28,19 @@ namespace Appelgran.Helpers
         public JsonByPath(string json)
         {
             var jss = new JavaScriptSerializer();
-            _data = jss.Deserialize<Dictionary<string, object>>(json);
+            if (json.StartsWith("["))
+            {
+                var arrayData = jss.Deserialize<ArrayList>(json);
+                _data = new Dictionary<string, object>(arrayData.Count);
+                for (var x = 0; x < arrayData.Count; x++)
+                {
+                    _data.Add(x.ToString(), arrayData[x]);
+                }
+            }
+            else
+            {
+                _data = jss.Deserialize<Dictionary<string, object>>(json);
+            }
         }
 
         private JsonByPath(Dictionary<string, object> data)
@@ -76,11 +88,11 @@ namespace Appelgran.Helpers
         /// </summary>
         /// <returns>[] or null.</returns>
         /// <example>data.GetArray().Select(x => JsonByPath.Use(x).GetString("name", ""));</example>
-        public ArrayList GetArray()
+        public IEnumerable<object> GetArray()
         {
             try
             {
-                return (ArrayList)_data;
+                return _data?.Values.Cast<object>();
             }
             catch
             {
@@ -91,11 +103,11 @@ namespace Appelgran.Helpers
         /// <summary>
         /// Tries to retrieve an array of values, defaults to null if unsuccessful.
         /// </summary>
-        /// <returns>ArrayList or null.</returns>
+        /// <returns>[] or null.</returns>
         /// <example>var staffGroups = data.GetArray("staff.groups");</example>
-        public ArrayList GetArray(string path)
+        public IEnumerable<object> GetArray(string path)
         {
-            return Get<ArrayList>(_data, path, null);
+            return Get<ArrayList>(_data, path, null)?.Cast<object>();
         }
 
         /// <summary>
@@ -149,12 +161,6 @@ namespace Appelgran.Helpers
             if (!paths.All(x => Regex.IsMatch(x, @"^[^[]+(?:\[[0-9]+\])*$")))
             {
                 throw new ArgumentException("Invalid jsonpath syntax!");
-            }
-
-            // data.TryGetValue further on throws on null
-            if (data.ValueKind == JsonValueKind.Null)
-            {
-                return fallback;
             }
 
             foreach (var path in paths)
